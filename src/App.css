@@ -9,6 +9,33 @@
   height: 100vh;
 }
 
+.rotate {
+  animation: rotate 20s linear 0s infinite normal;
+}
+
 .button {
   @apply w-20 h-9 bg-blue-500  text-lg text-white  rounded-lg;
+}
+
+.rank {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 50px 1fr 1fr 1fr 1fr 1fr;
+}
+
+.rank-item:nth-child(6) {
+  border-bottom: 0px;
+}
+
+#move {
+  transition: all 0.5s ease-in-out;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

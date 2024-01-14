@@ -7,6 +7,11 @@ import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useAdduser } from "../hooks/useAdduser";
 
+export type Userdata = {
+  name: string;
+  scores: number[];
+};
+
 const Auth = () => {
   const {
     register,
@@ -20,14 +25,18 @@ const Auth = () => {
 
   const [localnames, setlocalnames] = useState<string[]>([]);
   const [remotenames, setremotenames] = useState<string[]>([]);
+  const [usersdsata, setusersdata] = useState<Userdata[]>([]);
   const { adduser } = useAdduser();
 
   useEffect(() => {
-    if (localStorage.getItem("auth"))
-      setlocalnames(
-        JSON.parse(localStorage.getItem("auth") as string).names as string[]
-      );
-    else localStorage.setItem("auth", JSON.stringify(localnames));
+    if (localStorage.getItem("auth")) {
+      const data = JSON.parse(localStorage.getItem("auth") as string).data;
+      const names = data.map((value: Userdata) => {
+        return value.name;
+      });
+      setlocalnames(names);
+      setusersdata(data);
+    } else localStorage.setItem("auth", JSON.stringify({ data: [] }));
     const usersData = collection(db, "users");
 
     getDocs(usersData).then((snapShot): void => {
@@ -51,8 +60,12 @@ const Auth = () => {
       !checkname(data.name, localnames) &&
       !checkname(data.name, remotenames)
     ) {
-      const newlocalnames = [...localnames, data.name];
-      localStorage.setItem("auth", JSON.stringify({ names: newlocalnames }));
+      const object = {
+        name: data.name,
+        scores: [],
+      };
+      const newusersdata = [...usersdsata, object];
+      localStorage.setItem("auth", JSON.stringify({ data: newusersdata }));
       adduser({ username: data.name, score: 0 });
       navigate(`/menue/${data.name}`);
     } else if (
@@ -66,9 +79,8 @@ const Auth = () => {
 
   return (
     <div className="w-screen h-screen bg-gray-900 flex flex-col  items-center">
-      <div className="w-full flex ">
-        <img className="w-[600px] ml-12" src="./img/Title.png" />
-      </div>
+      <img className="w-[600px] mr-[650px]" src="./img/Title.png" />
+
       <div className="w-screen mt-44 flex flex-col items-center">
         <h1 className=" text-2xl text-white text-center">
           新しい名前、
@@ -90,8 +102,10 @@ const Auth = () => {
               {...register("name")}
             />
           </div>
-          <p className="ml-11">{errors.name?.message as ReactNode}</p>
-          <button className="button ml-11 mt-2">決定</button>
+          <p className="ml-4 text-red-500">
+            {errors.name?.message as ReactNode}
+          </p>
+          <button className="button  mt-2">決定</button>
         </form>
       </div>
     </div>
